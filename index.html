@@ -921,7 +921,7 @@
         function setContainer() {
             for (var w = 0; w < pass.length; w++) {
                 var it = document.createElement("p")
-                it.id = pass[w]
+                it.id = pass[w]+"_x"
                 it.innerText = pass[w]
                 container.appendChild(it)
             }
@@ -1033,8 +1033,8 @@
                 if (isValid === true) {
                     
                     seedWallet.split(" ").forEach(word=> {
-                        pointPass.push(word)
-                        document.getElementById(word).className = "point"
+                        pointPass.push(word+"_x")
+                        document.getElementById(word+"_x").className = "point"
                     })
 
                     nHis = nHis + 1
