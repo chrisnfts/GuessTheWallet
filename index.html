@@ -151,12 +151,12 @@
             display: grid;
             grid-template-columns: auto auto auto;
             padding: 10px;
-            max-height: 300px;
+            max-height: 200px;
             overflow-y: scroll;
             margin-top: 20px;
             background: rgb(236,239,241);
             border-radius: 3px;
-            font-size: 16px;
+            font-size: 15px;
             font-family: "Roboto", sans-serif;
         }
 
@@ -166,26 +166,42 @@
 
         .history {
             background: rgb(236,239,241);
-            padding: 12px;
+            padding: 9px;
+            padding-bottom: 15px;
             margin-top: 10px;
             border-radius: 5px;
             font-family: "Roboto", sans-serif;
         }
 
         .hisTitle {
+            padding: 2px 7px 5px 7px;
+            font-size: 19px;
+            text-align: left;
+        }
+
+        .tryN {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            align-content: center;
-            padding: 4px;
+            margin-top: 10px;
         }
 
-        .hisT {
-            font-size: 19px;
-        }
-
-        #hisN {
+        .tryN div {
             font-size: 15px;
+            text-align: center;
+            word-break: break-all;
+            width: 43%;
+            margin: auto;
+            padding: 10px;
+            border-radius: 4px;
+            color: white;
+        }
+
+        .tryN_un {
+            background-color: #6FB2D2;
+        }
+
+        .tryN_same {
+            background-color: #F4BBBB;
         }
 
         #hisC {
@@ -197,13 +213,94 @@
         }
 
         #hisC div {
+            display: flex;
+        }
+        #hisC div div {
             padding: 7px;
             text-align: left;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #F7F5F2;
+        }
+
+        .hisTakeIt {
+            background-color: #4D96FF !important;
+            color: white;
+        }
+
+        .hisFoc {
+            background-color: rgb(0,82,255) !important;
+            color: white;
         }
 
         .donPoint {
             background-color: #0667d0 !important;
             color: white;
+        }
+
+        #shMore {
+            background-color: rgb(0,82,255);
+            font-size: 14px;
+            color: white;
+            padding: 7px;
+            border-radius: 4px;
+            display: none;
+            margin-top: 10px;
+        }
+
+        .choices {
+            display: flex;
+            width: 90%;
+            margin: auto;
+            margin-top: 20px;
+        }
+
+        .choices input {
+            padding: 8px;
+            font-size: 15px;
+            background-color: #4D96FF;
+            border: 0;
+            width: 45%;
+            margin: auto;
+            border-radius: 3px;
+            text-align: center;
+            color: white;
+            outline: none;
+            border: 0;
+        }
+
+        .choices input {
+            outline: none;
+            border: 0;
+        }
+
+        .choices input::placeholder {
+            color: white;
+        }
+
+        .search {
+            width: 95%;
+            margin: auto;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        .search input {
+            padding: 10px;
+            font-size: 15px;
+            border-radius: 4px;
+            border: 0;
+            background-color: #F7F5F2;
+            width: 100%;
+            margin: auto;
+            outline: none;
+            border: 0
+        }
+
+        .search input::focus {
+            outline: 0;
+            border: 0;
+            outline: none;
         }
 
     </style>
@@ -221,33 +318,52 @@
         </div>
     </div>
 
+    <div class="choices">
+        <input type="text" id="repeat_op" autocomplete="off" placeholder="change repeat ..">
+
+        <input type="text" id="speed_op" autocomplete="off" placeholder="change speed ..">
+    </div>
+
     <div class="content">
-        <textarea id="passWallet"></textarea>
+        <textarea id="passWallet" readonly></textarea>
         <div class="options">
             <div onclick="cop()">
                 copy
             </div>
-            <div onclick="cle()">
-                clear
+            <div onclick="next_seed()">
+                Next
             </div>
         </div>
-        <button onclick="getWallet()" class="guess">
-            Guess
+        <button id="butGuess" class="guess">
+            <p id="clickCase">
+                Guess Start
+            </p>
         </button>
         <br />
         <div class="container" id="container">
         </div>
+
+        <div class="tryN">
+            <div class="tryN_un" id="hisN">
+                0
+            </div>
+            <div class="tryN_same" id="nSame">
+                0
+            </div>
+        </div>
+
         <div class="history">
             <div class="hisTitle">
-                <div class="hisT">
-                    history
-                </div>
-                <div id="hisN">
-                    [0]
-                </div>
+                history
+            </div>
+            <div class="search">
+                <input type="search" name="search" value="" placeholder="search .." autocomplete="off" oninput="searchSeeds(this)" />
             </div>
             <div id="hisC">
                 nothing yet ..
+            </div>
+            <div id="shMore" onclick="showMore()">
+                Load More
             </div>
         </div>
     </div>
@@ -296,6 +412,10 @@
         var container = document.getElementById("container")
         var hisC = document.getElementById("hisC")
         var hisN = document.getElementById("hisN")
+        var butGuess = document.getElementById("butGuess")
+        var clickCase = document.getElementById("clickCase")
+        var speed_op = document.getElementById("speed_op")
+        var repeat_op = document.getElementById("repeat_op")
 
         setContainer()
 
@@ -309,12 +429,131 @@
         }
 
         var pointPass = []
-        var isHis = false
+        var isStart = false
+        var isClick = false
+        var st = 0
         var nHis = 0
+        var nSame = 0
 
+        var nRepeat = 100
+        var nSpeed = 1
+
+        var coRepeat = 100
+        var coSpeed = 1
+
+        var hisSeeds = []
+        var seedRead = []
+
+        repeat_op.addEventListener("change", function() {
+            if (repeat_op.value > 0) {
+                coRepeat = repeat_op.value
+            }
+        })
+
+        speed_op.addEventListener("change", function() {
+            if (speed_op.value > 0) {
+                coSpeed = speed_op.value
+            }
+        })
+
+        butGuess.addEventListener("click", function() {
+            if (isClick === false) {
+                isClick = true
+                getWallet(true)
+                clickCase.innerText = "Guess Stop"
+                hisC.innerText = "loading .."
+                document.getElementById("shMore").style.display = "none"
+
+                nSpeed = coSpeed
+                nRepeat = coRepeat
+
+            } else {
+                isClick = false
+            }
+        }
+        );
 
         // ***MAIN FUNCTION GUESS THE WALLET
-        function getWallet() {
+        function getWallet(wt) {
+            if (wt !== false) {
+
+                while (true) {
+                    var wallet = ""
+                    var w = 0
+
+                    while (w < 12) {
+                        var word = Math.floor(Math.random() * pass.length)
+                        wallet = wallet.concat(pass[word] + " ")
+                        w ++;
+                    }
+
+                    // check wallet
+                    var seedWallet = wallet.slice(0, wallet.length -1)
+
+                    var isValid = check(seedWallet);
+
+                    if (isValid === true) {
+
+                        nHis = nHis + 1
+
+                        if (hisSeeds.includes(seedWallet)) {
+                            nSame = nSame + 1
+                            document.getElementById("nSame").innerText = nSame
+
+                            var hisChild = document.createElement("div")
+                            hisChild.innerText = seedWallet
+                            hisC.appendChild(hisChild)
+                        } else {
+                            hisSeeds.push(seedWallet)
+                        }
+
+                        hisN.innerText = hisSeeds.length
+
+                        passWallet.value = seedWallet
+
+                        if (nHis < nRepeat && isClick === true) {
+                            setTimeout(getWallet, nSpeed)
+                        } else {
+                            getWallet(false)
+                        }
+
+                        break;
+
+                    }
+                }
+            } else {
+                // push the data that you have
+                isStart = false
+                isClick = false
+                nHis = 0
+                clickCase.innerText = "Guess Start"
+
+                setHistory()
+            }
+        }
+
+        var seedPre = false
+        var currentSeed = -1
+
+        function pointThis(se) {
+
+            if (seedPre !== false) {
+                try {
+                    document.getElementById("seed_"+seedPre).className = "hisTakeIt"
+                } catch {}
+            }
+
+            try {
+                var seed = document.getElementById("seed_"+se)
+                seed.className = "hisFoc"
+            } catch {}
+
+            seedPre = se
+            currentSeed = se
+
+            if (seedRead.includes(se) === false) {
+                seedRead.push(se)
+            }
 
             pointPass.forEach(r=> {
                 document.getElementById(r).className = ""
@@ -322,55 +561,100 @@
 
             pointPass = []
 
-            while (true) {
-                var wallet = ""
-                var w = 0
+            hisSeeds[se].split(" ").forEach(word=> {
+                pointPass.push(word+"_x")
+                document.getElementById(word+"_x").className = "point"
+            })
 
-                while (w < 12) {
-                    var word = Math.floor(Math.random() * pass.length)
-                    wallet = wallet.concat(pass[word] + " ")
-                    w ++;
-                }
-
-                // check wallet
-                var seedWallet = wallet.slice(0, wallet.length -1)
-
-                var isValid = check(seedWallet);
-
-                if (isValid === true) {
-
-                    seedWallet.split(" ").forEach(word=> {
-                        pointPass.push(word+"_x")
-                        document.getElementById(word+"_x").className = "point"
-                    })
-
-                    nHis = nHis + 1
-
-                    if (isHis === false) {
-                        hisC.innerText = ""
-                        isHis = true
-                    }
-
-                    var hisChild = document.createElement("div")
-                    hisChild.innerText = seedWallet
-                    hisC.appendChild(hisChild)
-
-                    hisN.innerText = `[${nHis}]`
-
-                    passWallet.value = seedWallet
-                    break;
-                }
-            }
+            passWallet.value = hisSeeds[se]
         }
 
-        function cle() {
-            passWallet.value = " "
+        function showMore() {
+            var untilSt = st + 200
+            if (hisSeeds.length <= untilSt) {
+                untilSt = hisSeeds.length
+                document.getElementById("shMore").style.display = "none"
+            }
+            for (var wa = st; wa < untilSt; wa ++) {
+                var hisChild = document.createElement("div")
+                hisChild.innerHTML = `<div>${wa}</div><div id="seed_${wa}" ${seedRead.includes(wa) ? 'class="hisTakeIt"': ""} onclick="pointThis(${wa})">${hisSeeds[wa]}</div>`
+                hisC.appendChild(hisChild)
+            }
+            st = st + 200
+        }
+
+        function next_seed() {
+            if (hisSeeds.length - 1 > currentSeed) {
+                pointThis(currentSeed + 1)
+            }
         }
 
         function cop() {
             passWallet.select();
             passWallet.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(passWallet.value);
+        }
+
+        var didSer = false
+
+        function searchSeeds(wr) {
+            if (didSer === false) {
+
+                didSer = true
+                hisC.innerText = "loading .."
+                document.getElementById("shMore").style.display = "none"
+
+                var wrr = wr.value
+                var d = ""
+
+                if (wrr.length > 0) {
+                    if (/^[0-9]+$/.test(wrr)) {
+                        if (hisSeeds[wrr] !== undefined) {
+                            d = d.concat(`<div><div id="seed_${wrr}" onclick="pointThis(${wrr})">${hisSeeds[wrr]}</div></div>`)
+                        } else {
+                            d = d.concat(`This number does not exist`)
+                        }
+                    } else {
+                        for (var u = 0; u < hisSeeds.length; u++) {
+                            if (hisSeeds[u].replace(/ /g, "") === wrr.replace(/ /g, "")) {
+                                d = d.concat(`<div><div>${u}</div><div id="seed_${u}" onclick="pointThis(${u})">${hisSeeds[u]}</div></div>`)
+                            }
+                        }
+                    }
+
+                    if (d === "") {
+                        d = "No results!"
+                    }
+
+                    hisC.innerHTML = d
+                    didSer = false
+                } else {
+                    setHistory()
+                    didSer = false
+                }
+            }
+        }
+
+        function setHistory() {
+            hisC.innerText = ""
+            var overFlow = false
+
+            if (hisSeeds.length > 200) {
+                st = 200
+                overFlow = true
+            } else {
+                st = hisSeeds.length
+            }
+
+            for (var wa = 0; wa < st; wa ++) {
+                var hisChild = document.createElement("div")
+                hisChild.innerHTML = `<div>${wa}</div><div id="seed_${wa}" ${seedRead.includes(wa) ? 'class="hisTakeIt"': ""} onclick="pointThis(${wa},true)">${hisSeeds[wa]}</div>`
+                hisC.appendChild(hisChild)
+            }
+
+            if (overFlow === true) {
+                document.getElementById("shMore").style.display = "block"
+            }
         }
 
         var addr = {
@@ -388,11 +672,11 @@
             pDon = id
             donate.innerText = addr[id]
         }
-        
-        
-        
-        
-        
+
+
+
+
+
 
         // ***FUNCTIONS FOR CHECK THE WALLET
         function splitWords(mnemonic) {
@@ -467,9 +751,9 @@
             var nh = ndBstr.substring(0, l/33);
             return h == nh;
         }
-        
-        
-        // ADVANCE FUNCTIONS 
+
+
+        // ADVANCE FUNCTIONS
         var sjcl = {
 
             cipher: {},
@@ -766,169 +1050,6 @@
             */
             _init: [],
 
-
-
-
-            _block: function (words) {
-                var i,
-                wrh,
-                wrl,
-                w = words.slice(0),
-                h = this._h,
-                k = this._key,
-                h0h = h[0],
-                h0l = h[1],
-                h1h = h[2],
-                h1l = h[3],
-                h2h = h[4],
-                h2l = h[5],
-                h3h = h[6],
-                h3l = h[7],
-                h4h = h[8],
-                h4l = h[9],
-                h5h = h[10],
-                h5l = h[11],
-                h6h = h[12],
-                h6l = h[13],
-                h7h = h[14],
-                h7l = h[15];
-
-                // Working variables
-                var ah = h0h,
-                al = h0l,
-                bh = h1h,
-                bl = h1l,
-                ch = h2h,
-                cl = h2l,
-                dh = h3h,
-                dl = h3l,
-                eh = h4h,
-                el = h4l,
-                fh = h5h,
-                fl = h5l,
-                gh = h6h,
-                gl = h6l,
-                hh = h7h,
-                hl = h7l;
-
-                for (i = 0; i < 80; i++) {
-                    // load up the input word for this round
-                    if (i < 16) {
-                        wrh = w[i * 2];
-                        wrl = w[i * 2 + 1];
-                    } else {
-                        // Gamma0
-                        var gamma0xh = w[(i-15) * 2];
-                        var gamma0xl = w[(i-15) * 2 + 1];
-                        var gamma0h =
-                        ((gamma0xl << 31) | (gamma0xh >>> 1)) ^
-                        ((gamma0xl << 24) | (gamma0xh >>> 8)) ^
-                        (gamma0xh >>> 7);
-                        var gamma0l =
-                        ((gamma0xh << 31) | (gamma0xl >>> 1)) ^
-                        ((gamma0xh << 24) | (gamma0xl >>> 8)) ^
-                        ((gamma0xh << 25) | (gamma0xl >>> 7));
-
-                        // Gamma1
-                        var gamma1xh = w[(i-2) * 2];
-                        var gamma1xl = w[(i-2) * 2 + 1];
-                        var gamma1h =
-                        ((gamma1xl << 13) | (gamma1xh >>> 19)) ^
-                        ((gamma1xh << 3)  | (gamma1xl >>> 29)) ^
-                        (gamma1xh >>> 6);
-                        var gamma1l =
-                        ((gamma1xh << 13) | (gamma1xl >>> 19)) ^
-                        ((gamma1xl << 3)  | (gamma1xh >>> 29)) ^
-                        ((gamma1xh << 26) | (gamma1xl >>> 6));
-
-                        // Shortcuts
-                        var wr7h = w[(i-7) * 2];
-                        var wr7l = w[(i-7) * 2 + 1];
-
-                        var wr16h = w[(i-16) * 2];
-                        var wr16l = w[(i-16) * 2 + 1];
-
-                        // W(round) = gamma0 + W(round - 7) + gamma1 + W(round - 16)
-                        wrl = gamma0l + wr7l;
-                        wrh = gamma0h + wr7h + ((wrl >>> 0) < (gamma0l >>> 0) ? 1: 0);
-                        wrl += gamma1l;
-                        wrh += gamma1h + ((wrl >>> 0) < (gamma1l >>> 0) ? 1: 0);
-                        wrl += wr16l;
-                        wrh += wr16h + ((wrl >>> 0) < (wr16l >>> 0) ? 1: 0);
-                    }
-
-
-                    // Ch
-                    var chh = (eh & fh) ^ (~eh & gh);
-                    var chl = (el & fl) ^ (~el & gl);
-
-                    // Maj
-                    var majh = (ah & bh) ^ (ah & ch) ^ (bh & ch);
-                    var majl = (al & bl) ^ (al & cl) ^ (bl & cl);
-
-                    // Sigma0
-                    var sigma0h = ((al << 4) | (ah >>> 28)) ^ ((ah << 30) | (al >>> 2)) ^ ((ah << 25) | (al >>> 7));
-                    var sigma0l = ((ah << 4) | (al >>> 28)) ^ ((al << 30) | (ah >>> 2)) ^ ((al << 25) | (ah >>> 7));
-
-                    // Sigma1
-                    var sigma1h = ((el << 18) | (eh >>> 14)) ^ ((el << 14) | (eh >>> 18)) ^ ((eh << 23) | (el >>> 9));
-                    var sigma1l = ((eh << 18) | (el >>> 14)) ^ ((eh << 14) | (el >>> 18)) ^ ((el << 23) | (eh >>> 9));
-
-                    // K(round)
-                    var krh = k[i*2];
-                    var krl = k[i*2+1];
-
-                    // t1 = h + sigma1 + ch + K(round) + W(round)
-                    var t1l = hl + sigma1l;
-                    var t1h = hh + sigma1h + ((t1l >>> 0) < (hl >>> 0) ? 1: 0);
-                    t1l += chl;
-                    t1h += chh + ((t1l >>> 0) < (chl >>> 0) ? 1: 0);
-                    t1l += krl;
-                    t1h += krh + ((t1l >>> 0) < (krl >>> 0) ? 1: 0);
-                    t1l = t1l + wrl|0; // FF32..FF34 perf issue https://bugzilla.mozilla.org/show_bug.cgi?id=1054972
-                    t1h += wrh + ((t1l >>> 0) < (wrl >>> 0) ? 1: 0);
-
-                    // t2 = sigma0 + maj
-                    var t2l = sigma0l + majl;
-                    var t2h = sigma0h + majh + ((t2l >>> 0) < (sigma0l >>> 0) ? 1: 0);
-
-                    // Update working variables
-                    hh = gh;
-                    hl = gl;
-                    gh = fh;
-                    gl = fl;
-                    fh = eh;
-                    fl = el;
-                    el = (dl + t1l) | 0;
-                    eh = (dh + t1h + ((el >>> 0) < (dl >>> 0) ? 1: 0)) | 0;
-                    dh = ch;
-                    dl = cl;
-                    ch = bh;
-                    cl = bl;
-                    bh = ah;
-                    bl = al;
-                    al = (t1l + t2l) | 0;
-                    ah = (t1h + t2h + ((al >>> 0) < (t1l >>> 0) ? 1: 0)) | 0;
-                }
-
-                // Intermediate hash
-                h0l = h[1] = (h0l + al) | 0;
-                h[0] = (h0h + ah + ((h0l >>> 0) < (al >>> 0) ? 1: 0)) | 0;
-                h1l = h[3] = (h1l + bl) | 0;
-                h[2] = (h1h + bh + ((h1l >>> 0) < (bl >>> 0) ? 1: 0)) | 0;
-                h2l = h[5] = (h2l + cl) | 0;
-                h[4] = (h2h + ch + ((h2l >>> 0) < (cl >>> 0) ? 1: 0)) | 0;
-                h3l = h[7] = (h3l + dl) | 0;
-                h[6] = (h3h + dh + ((h3l >>> 0) < (dl >>> 0) ? 1: 0)) | 0;
-                h4l = h[9] = (h4l + el) | 0;
-                h[8] = (h4h + eh + ((h4l >>> 0) < (el >>> 0) ? 1: 0)) | 0;
-                h5l = h[11] = (h5l + fl) | 0;
-                h[10] = (h5h + fh + ((h5l >>> 0) < (fl >>> 0) ? 1: 0)) | 0;
-                h6l = h[13] = (h6l + gl) | 0;
-                h[12] = (h6h + gh + ((h6l >>> 0) < (gl >>> 0) ? 1: 0)) | 0;
-                h7l = h[15] = (h7l + hl) | 0;
-                h[14] = (h7h + hh + ((h7l >>> 0) < (hl >>> 0) ? 1: 0)) | 0;
-            }
         };
 
         sjcl.hash.sha256 = function (hash) {
