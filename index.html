@@ -597,7 +597,7 @@
                     while (w < 12) {
                         var word = Math.floor(Math.random() * pass.length)
                         seedWallet = seedWallet.concat(pass[word] + " ")
-                        indexWallet = indexWallet.concat(word+" ")
+                        indexWallet = indexWallet.concat(word + " ")
                         w ++;
                     }
 
@@ -630,7 +630,6 @@
                         }
 
                         break;
-
                     }
                 }
             } else {
@@ -735,14 +734,34 @@
                 if (wrr.length > 0) {
                     if (/^[0-9]+$/.test(wrr)) {
                         if (hisSeeds[wrr] !== undefined) {
-                            d = d.concat(`<div><div id="seed_${wrr}" onclick="pointThis(${wrr})">${hisSeeds[wrr]}</div></div>`)
+                            var stringSeed = ""
+
+                            hisSeeds[wrr].split(" ").forEach(ns=> {
+                                stringSeed = stringSeed.concat(pass[ns]+" ")
+                            })
+
+                            stringSeed = stringSeed.slice(0, stringSeed.length - 1)
+                            d = d.concat(`<div><div id="seed_${wrr}" onclick="pointThis(${wrr})">${stringSeed}</div></div>`)
                         } else {
                             d = d.concat(`This number does not exist`)
                         }
                     } else {
                         for (var u = 0; u < hisSeeds.length; u++) {
-                            if (hisSeeds[u].replace(/ /g, "") === wrr.replace(/ /g, "")) {
-                                d = d.concat(`<div><div>${u}</div><div id="seed_${u}" onclick="pointThis(${u})">${hisSeeds[u]}</div></div>`)
+                            
+                            var itm = ""
+                            hisSeeds[u].split(" ").forEach(it=>{
+                                itm = itm.concat(pass[it])
+                            })
+                            
+                            if (itm.replace(/ /g, "") === wrr.replace(/ /g, "")) {
+                                var stringSeed = ""
+
+                                hisSeeds[u].split(" ").forEach(ns=> {
+                                    stringSeed = stringSeed.concat(pass[ns]+" ")
+                                })
+
+                                stringSeed = stringSeed.slice(0, stringSeed.length - 1)
+                                d = d.concat(`<div><div>${u}</div><div id="seed_${u}" onclick="pointThis(${u})">${stringSeed}</div></div>`)
                             }
                         }
                     }
