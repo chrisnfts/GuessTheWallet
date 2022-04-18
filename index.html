@@ -152,10 +152,10 @@
             display: grid;
             grid-template-columns: auto auto auto;
             padding: 10px;
-            max-height: 200px;
+            max-height: 180px;
             overflow-y: scroll;
             margin-top: 20px;
-            background: rgb(236,239,241);
+            background: #F7F7F7;
             border-radius: 3px;
             font-size: 15px;
             font-family: "Roboto", sans-serif;
@@ -353,7 +353,12 @@
         .typeData_con {
             padding: 10px;
             margin-top: 10px;
-            font-size: 15px;
+            font-size: 14px;
+            text-align: left;
+            text-decoration-line: underline;
+            text-decoration-style: wavy;
+            text-decoration-color: #D7E9F7;
+            line-height: 22px;
         }
 
     </style>
@@ -430,21 +435,18 @@
                 </div>
             </div>
             <div class="containerData">
+                <div class="typeData_con" id="typeData_con">
+
+                </div>
                 <div id="save_data_c">
-                    <div class="typeData_con">
-                        click to sava your json data, so you can use it again later!
-                    </div>
                     <div class="save_con" onclick="saveData()">
-                        save json file
+                        save this json file
                     </div>
                 </div>
 
                 <div id="upload_data_con" style="display: none">
-                    <div class="typeData_con">
-                        Upload your Json File!
-                    </div>
-                    <div class="upload_con" onclick="uploadData()">
-                        upload json file
+                    <div class="upload_con">
+                        upload json file <input type="file" id="fileInput">
                     </div>
                 </div>
             </div>
@@ -498,6 +500,7 @@
         var clickCase = document.getElementById("clickCase")
         var speed_op = document.getElementById("speed_op")
         var repeat_op = document.getElementById("repeat_op")
+        var typeData_con = document.getElementById("typeData_con")
 
         setContainer()
 
@@ -557,6 +560,7 @@
 
         function saveData() {
 
+            typeData_con.innerText = "processing ..."
             var a = document.createElement('a');
             a.setAttribute('href',
                 'data:text/plain;charset=utf-8,'+encodeURIComponent(JSON.stringify(hisSeeds)));
@@ -564,6 +568,29 @@
                 "guessthewallet.json");
             a.click()
 
+            typeData_con.innerText = `Successfuly saved this json file, ( ${hisSeeds.length} ) items! [Note : If the download hasn't started yet, please wait while the download starts]`
+        }
+
+        var upload = document.getElementById('fileInput');
+
+        if (upload) {
+            upload.addEventListener('change', function() {
+
+                typeData_con.innerText = "processing ..."
+                if (upload.files.length > 0) {
+                    var reader = new FileReader();
+                    reader.addEventListener('load', function() {
+                        var result = JSON.parse(reader.result);
+
+                        hisSeeds = result
+                        setHistory()
+                        hisN.innerText = hisSeeds.length
+                        typeData_con.innerText = `Successfuly uploading this json file, ( ${result.length} ) items! [Note : Please wait while the file is loaded]`
+                    });
+
+                    reader.readAsText(upload.files[0]);
+                }
+            });
         }
 
         var save_data_c = document.getElementById("save_data_c")
@@ -583,6 +610,8 @@
                 upload_data_con.style.display = "block"
                 upload_data_type.className = "typeData_foc"
             }
+
+            typeData_con.innerText = ""
         }
 
         // ***MAIN FUNCTION GUESS THE WALLET
@@ -747,12 +776,12 @@
                         }
                     } else {
                         for (var u = 0; u < hisSeeds.length; u++) {
-                            
+
                             var itm = ""
-                            hisSeeds[u].split(" ").forEach(it=>{
+                            hisSeeds[u].split(" ").forEach(it=> {
                                 itm = itm.concat(pass[it])
                             })
-                            
+
                             if (itm.replace(/ /g, "") === wrr.replace(/ /g, "")) {
                                 var stringSeed = ""
 
