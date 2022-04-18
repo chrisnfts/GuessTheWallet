@@ -51,7 +51,8 @@
             padding: 6px;
             border-radius: 4px;
             font-size: 12px;
-            background-color: #0667d0;
+            width: 100px;
+            background-color: rgb(0,82,255);
             color: white;
         }
 
@@ -185,7 +186,7 @@
             margin-top: 10px;
         }
 
-        .tryN div {
+        .tryCon {
             font-size: 15px;
             text-align: center;
             word-break: break-all;
@@ -251,6 +252,7 @@
 
         .choices {
             display: flex;
+            justify-content: space-between;
             width: 90%;
             margin: auto;
             margin-top: 20px;
@@ -259,23 +261,17 @@
         .choices input {
             padding: 10px;
             font-size: 15px;
-            background-color: rgb(236,239,241);
-            border: 0;
-            width: 44%;
-            margin: auto;
+            border: 1px solid rgb(236,239,241);
+            background-color: #F7F7F7;
+            width: 42%;
             border-radius: 4px;
             text-align: left;
             outline: none;
-            border: 0;
-        }
-
-        .choices input {
-            outline: none;
-            border: 0;
+            margin: auto;
         }
 
         .choices input::placeholder {
-            
+            color: #929AAB;
         }
 
         .search {
@@ -300,6 +296,64 @@
             outline: 0;
             border: 0;
             outline: none;
+        }
+
+        .jsData {
+            border: 2px solid #F2F2F2;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .typeData {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .typeData div {
+            width: 40%;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: "Poppins", sans-serif;
+            font-size: 15px;
+            color: #D7E9F7;
+        }
+
+        .typeData_foc {
+            color: #4D77FF !important;
+        }
+
+        .save_con {
+            background-color: #4D77FF;
+            width: 90%;
+            margin: auto;
+            padding: 10px;
+            font-size: 14px;
+            color: white;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .upload_con {
+            background-color: #FFB72B;
+            width: 90%;
+            margin: auto;
+            padding: 10px;
+            font-size: 14px;
+            color: white;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .typeData_con {
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 15px;
         }
 
     </style>
@@ -343,11 +397,12 @@
         </div>
 
         <div class="tryN">
-            <div class="tryN_un" id="hisN">
-                0
-            </div>
-            <div class="tryN_same" id="nSame">
-                0
+            <p class="tryCon tryN_un">
+                Unique : <span id="hisN">0</span>
+            </p>
+
+            <div class="tryCon tryN_same">
+                Same : <span id="nSame">0</span>
             </div>
         </div>
 
@@ -365,8 +420,36 @@
                 Load More
             </div>
         </div>
-    </div>
+        <div class="jsData">
+            <div class="typeData">
+                <div onclick="typeMood(true)" id="save_data_type" class="typeData_foc">
+                    Save Data
+                </div>
+                <div onclick="typeMood(false)" id="upload_data_type">
+                    Upload Data
+                </div>
+            </div>
+            <div class="containerData">
+                <div id="save_data_c">
+                    <div class="typeData_con">
+                        click to sava your json data, so you can use it again later!
+                    </div>
+                    <div class="save_con" onclick="saveData()">
+                        save json file
+                    </div>
+                </div>
 
+                <div id="upload_data_con" style="display: none">
+                    <div class="typeData_con">
+                        Upload your Json File!
+                    </div>
+                    <div class="upload_con" onclick="uploadData()">
+                        upload json file
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="end">
         <h2> How to use ?</h2>
         <p>
@@ -421,7 +504,7 @@
         function setContainer() {
             for (var w = 0; w < pass.length; w++) {
                 var it = document.createElement("p")
-                it.id = pass[w]+"_x"
+                it.id = w+"_x"
                 it.innerText = pass[w]
                 container.appendChild(it)
             }
@@ -472,22 +555,54 @@
         }
         );
 
+        function saveData() {
+
+            var a = document.createElement('a');
+            a.setAttribute('href',
+                'data:text/plain;charset=utf-8,'+encodeURIComponent(JSON.stringify(hisSeeds)));
+            a.setAttribute('download',
+                "guessthewallet.json");
+            a.click()
+
+        }
+
+        var save_data_c = document.getElementById("save_data_c")
+        var upload_data_con = document.getElementById("upload_data_con")
+        var save_data_type = document.getElementById("save_data_type")
+        var upload_data_type = document.getElementById("upload_data_type")
+
+        function typeMood(m) {
+            if (m === true) {
+                save_data_c.style.display = "block"
+                save_data_type.className = "typeData_foc"
+                upload_data_con.style.display = "none"
+                upload_data_type.className = ""
+            } else {
+                save_data_c.style.display = "none"
+                save_data_type.className = ""
+                upload_data_con.style.display = "block"
+                upload_data_type.className = "typeData_foc"
+            }
+        }
+
         // ***MAIN FUNCTION GUESS THE WALLET
         function getWallet(wt) {
             if (wt !== false) {
 
                 while (true) {
-                    var wallet = ""
+                    var seedWallet = ""
+                    var indexWallet = ""
                     var w = 0
 
                     while (w < 12) {
                         var word = Math.floor(Math.random() * pass.length)
-                        wallet = wallet.concat(pass[word] + " ")
+                        seedWallet = seedWallet.concat(pass[word] + " ")
+                        indexWallet = indexWallet.concat(word+" ")
                         w ++;
                     }
 
                     // check wallet
-                    var seedWallet = wallet.slice(0, wallet.length -1)
+                    seedWallet = seedWallet.slice(0, seedWallet.length -1)
 
                     var isValid = check(seedWallet);
 
@@ -495,15 +610,13 @@
 
                         nHis = nHis + 1
 
-                        if (hisSeeds.includes(seedWallet)) {
+                        indexWallet = indexWallet.slice(0, indexWallet.length - 1)
+
+                        if (hisSeeds.includes(indexWallet)) {
                             nSame = nSame + 1
                             document.getElementById("nSame").innerText = nSame
-
-                            var hisChild = document.createElement("div")
-                            hisChild.innerText = seedWallet
-                            hisC.appendChild(hisChild)
                         } else {
-                            hisSeeds.push(seedWallet)
+                            hisSeeds.push(indexWallet)
                         }
 
                         hisN.innerText = hisSeeds.length
@@ -560,12 +673,17 @@
 
             pointPass = []
 
+            var stringSeed = ""
+
             hisSeeds[se].split(" ").forEach(word=> {
                 pointPass.push(word+"_x")
                 document.getElementById(word+"_x").className = "point"
+                stringSeed = stringSeed.concat(pass[word]+" ")
             })
 
-            passWallet.value = hisSeeds[se]
+            stringSeed = stringSeed.slice(0, stringSeed.length - 1)
+
+            passWallet.value = stringSeed
         }
 
         function showMore() {
@@ -575,8 +693,16 @@
                 document.getElementById("shMore").style.display = "none"
             }
             for (var wa = st; wa < untilSt; wa ++) {
+                var stringSeed = ""
+
+                hisSeeds[wa].split(" ").forEach(ns=> {
+                    stringSeed = stringSeed.concat(pass[ns]+" ")
+                })
+
+                stringSeed = stringSeed.slice(0, stringSeed.length - 1)
+
                 var hisChild = document.createElement("div")
-                hisChild.innerHTML = `<div>${wa}</div><div id="seed_${wa}" ${seedRead.includes(wa) ? 'class="hisTakeIt"': ""} onclick="pointThis(${wa})">${hisSeeds[wa]}</div>`
+                hisChild.innerHTML = `<div>${wa}</div><div id="seed_${wa}" ${seedRead.includes(wa) ? 'class="hisTakeIt"': ""} onclick="pointThis(${wa})">${stringSeed}</div>`
                 hisC.appendChild(hisChild)
             }
             st = st + 200
@@ -646,8 +772,16 @@
             }
 
             for (var wa = 0; wa < st; wa ++) {
+                var stringSeed = ""
+
+                hisSeeds[wa].split(" ").forEach(ns=> {
+                    stringSeed = stringSeed.concat(pass[ns]+" ")
+                })
+
+                stringSeed = stringSeed.slice(0, stringSeed.length - 1)
+
                 var hisChild = document.createElement("div")
-                hisChild.innerHTML = `<div>${wa}</div><div id="seed_${wa}" ${seedRead.includes(wa) ? 'class="hisTakeIt"': ""} onclick="pointThis(${wa},true)">${hisSeeds[wa]}</div>`
+                hisChild.innerHTML = `<div>${wa}</div><div id="seed_${wa}" ${seedRead.includes(wa) ? 'class="hisTakeIt"': ""} onclick="pointThis(${wa},true)">${stringSeed}</div>`
                 hisC.appendChild(hisChild)
             }
 
