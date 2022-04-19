@@ -279,11 +279,21 @@
             margin: auto;
             margin-top: 10px;
             margin-bottom: 15px;
+            display: flex;
+        }
+        .search button {
+            width: 55px;
+            border: 0;
+            background-color: #D1D1D1;
+            color: white;
+            font-size: 15px;
+            font-family: "Poppins",sans-serif;
+            border-radius: 0 4px 4px 0;
         }
         .search input {
             padding: 10px;
             font-size: 15px;
-            border-radius: 4px;
+            border-radius: 4px 0 0 4px;
             border: 0;
             background-color: #F7F5F2;
             width: 100%;
@@ -416,7 +426,8 @@
                 history
             </div>
             <div class="search">
-                <input type="search" name="search" value="" placeholder="search .." autocomplete="off" oninput="searchSeeds(this)" />
+                <input type="search" name="search" value="" placeholder="search .." id="searchInput" autocomplete="off" />
+                <button id="butSearch">></button>
             </div>
             <div id="hisC">
                 nothing yet ..
@@ -755,63 +766,90 @@
         }
 
         var didSer = false
+        var butSearch = document.getElementById("butSearch")
 
-        function searchSeeds(wr) {
+        butSearch.addEventListener("click", async function() {
             if (didSer === false) {
 
                 didSer = true
-                hisC.innerText = "loading .."
+                hisC.innerText = "Loading ..."
                 document.getElementById("shMore").style.display = "none"
 
-                var wrr = wr.value
+                var wrr = document.getElementById("searchInput").value
+
                 var d = ""
 
                 if (wrr.length > 0) {
-                    if (/^[0-9]+$/.test(wrr)) {
-                        if (hisSeeds[wrr] !== undefined) {
+                    var sn = wrr.replace(/ /g, "")
+                    if (/^[0-9]+$/.test(sn)) {
+                        if (hisSeeds[sn] !== undefined) {
                             var stringSeed = ""
 
-                            hisSeeds[wrr].split(" ").forEach(ns=> {
+                            hisSeeds[sn].split(" ").forEach(ns=> {
                                 stringSeed = stringSeed.concat(pass[ns]+" ")
                             })
 
                             stringSeed = stringSeed.slice(0, stringSeed.length - 1)
-                            d = d.concat(`<div><div id="seed_${wrr}" onclick="pointThis(${wrr})">${stringSeed}</div></div>`)
+                            d = d.concat(`<div><div id="seed_${sn}" onclick="pointThis(${sn})">${stringSeed}</div></div>`)
                         } else {
                             d = d.concat(`This number does not exist`)
                         }
+                        didSer = false
+                        hisC.innerHTML = d
                     } else {
-                        for (var u = 0; u < hisSeeds.length; u++) {
-
-                            var itm = ""
-                            hisSeeds[u].split(" ").forEach(it=> {
-                                itm = itm.concat(pass[it])
-                            })
-
-                            if (itm.replace(/ /g, "") === wrr.replace(/ /g, "")) {
-                                var stringSeed = ""
-
-                                hisSeeds[u].split(" ").forEach(ns=> {
-                                    stringSeed = stringSeed.concat(pass[ns]+" ")
-                                })
-
-                                stringSeed = stringSeed.slice(0, stringSeed.length - 1)
-                                d = d.concat(`<div><div>${u}</div><div id="seed_${u}" onclick="pointThis(${u})">${stringSeed}</div></div>`)
-                            }
-                        }
+                        searchSeeds(wrr).then((e)=> {
+                            didSer = false
+                            hisC.innerHTML = e
+                        })
                     }
-
-                    if (d === "") {
-                        d = "No results!"
-                    }
-
-                    hisC.innerHTML = d
-                    didSer = false
                 } else {
-                    setHistory()
                     didSer = false
+                    setHistory()
                 }
             }
+        })
+
+        function searchSeeds(wrr) {
+            return new Promise(resolve => {
+                var d = ""
+                var u = 0
+                var con = ""
+                try {
+                    wrr = wrr.replace(/[0-9]/g, '')
+                    wrr.split(" ").forEach(e=> {
+                        var sd = pass.indexOf(e)
+                        if (sd !== -1) {
+                            con = con.concat(sd+ " ")
+                        }
+                    })
+                    con = con.slice(0,
+                        con.length - 1)
+                    if(con.length > 0){
+                    for (var u = 0; u < hisSeeds.length; u++) {
+                        if (hisSeeds[u].includes(con)) {
+                            var stringSeed = ""
+                            hisSeeds[u].split(" ").forEach(ns=> {
+                                stringSeed = stringSeed.concat(pass[ns]+" ")
+                            })
+
+                            stringSeed = stringSeed.slice(0, stringSeed.length - 1)
+                            d = d.concat(`<div><div>${u}</div><div id="seed_${u}" onclick="pointThis(${u})">${stringSeed}</div></div>`)
+                        }
+                        if (hisSeeds.length - 1 === u) {
+                            if(d === ""){
+                                d = "No result!"
+                            }
+                            resolve(d)
+                        }
+                    }
+                    } else {
+                        resolve("No result! ")
+                    }
+
+                } catch(err) {
+                    resolve("No result [error]!")
+                }
+            })
         }
 
         function setHistory() {
