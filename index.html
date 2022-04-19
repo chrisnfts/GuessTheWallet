@@ -824,24 +824,24 @@
                     })
                     con = con.slice(0,
                         con.length - 1)
-                    if(con.length > 0){
-                    for (var u = 0; u < hisSeeds.length; u++) {
-                        if (hisSeeds[u].includes(con)) {
-                            var stringSeed = ""
-                            hisSeeds[u].split(" ").forEach(ns=> {
-                                stringSeed = stringSeed.concat(pass[ns]+" ")
-                            })
+                    if (con.length > 0) {
+                        for (var u = 0; u < hisSeeds.length; u++) {
+                            if (hisSeeds[u].includes(con)) {
+                                var stringSeed = ""
+                                hisSeeds[u].split(" ").forEach(ns=> {
+                                    stringSeed = stringSeed.concat(pass[ns]+" ")
+                                })
 
-                            stringSeed = stringSeed.slice(0, stringSeed.length - 1)
-                            d = d.concat(`<div><div>${u}</div><div id="seed_${u}" onclick="pointThis(${u})">${stringSeed}</div></div>`)
-                        }
-                        if (hisSeeds.length - 1 === u) {
-                            if(d === ""){
-                                d = "No result!"
+                                stringSeed = stringSeed.slice(0, stringSeed.length - 1)
+                                d = d.concat(`<div><div>${u}</div><div id="seed_${u}" onclick="pointThis(${u})">${stringSeed}</div></div>`)
                             }
-                            resolve(d)
+                            if (hisSeeds.length - 1 === u) {
+                                if (d === "") {
+                                    d = "No result!"
+                                }
+                                resolve(d)
+                            }
                         }
-                    }
                     } else {
                         resolve("No result! ")
                     }
