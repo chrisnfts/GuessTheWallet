@@ -132,7 +132,7 @@
 
         .guess {
             padding: 10px;
-            border: 1px solid rgb(0, 82, 255);
+            border: 0;
             background-color: rgb(0, 82, 255);
             cursor: pointer;
             color: rgb(255, 255, 255);
@@ -140,6 +140,10 @@
             width: 100%;
             font-family: "Poppins", sans-serif;
             font-size: 16px;
+        }
+        
+        .off {
+            background-color: #9ADCFF !important;
         }
 
         .point {
@@ -175,9 +179,14 @@
         }
 
         .hisTitle {
-            padding: 2px 7px 5px 7px;
-            font-size: 19px;
+            padding: 4px 7px 5px 7px;
+            font-size: 16px;
+            font-family: "Poppins" , sans-serif;
             text-align: left;
+            color: #343A40;
+            text-decoration-line: underline;
+            text-decoration-style: wavy;
+            text-decoration-color: #D7E9F7;
         }
 
         .tryN {
@@ -370,7 +379,7 @@
             border: 1px solid #4D77FF;
             border-radius: 3px;
         }
-        
+
         .emptyMes {
             font-size: 14px;
             margin: 10px;
@@ -380,17 +389,17 @@
             text-decoration-color: #D7E9F7;
             border-radius: 3px;
         }
-        
+
         .uploaded {
             font-size: 14px;
-            margin:10px;
+            margin: 10px;
             padding: 10px;
             background: #F8ECD1;
             text-align: left;
             border-radius: 4px;
             border-left: 4px solid #FFB72B;
         }
-        
+
         .saved {
             font-size: 14px;
             margin: 10px;
@@ -400,11 +409,11 @@
             border-left: 4px solid #86C6F4;
             border-radius: 4px;
         }
-        
+
         .sv {
             background: #86C6F4 !important;
         }
-        
+
         .refrish {
             font-size: 11px;
             font-family: "Poppins",sans-serif;
@@ -461,13 +470,13 @@
             </p>
 
             <div class="tryCon tryN_same">
-                Same : <span id="nSame">0</span>
+                Match : <span id="nSame">0</span>
             </div>
         </div>
 
         <div class="history">
             <div class="hisTitle">
-                history
+                Database
             </div>
             <div class="search">
                 <input type="search" name="search" value="" placeholder="search .." id="searchInput" autocomplete="off" />
@@ -491,7 +500,7 @@
             </div>
             <div class="containerData">
                 <div id="processMes">
-                    
+
                 </div>
                 <div class="typeData_con" id="typeData_con">
 
@@ -596,7 +605,26 @@
 
 
         // ***MAIN FUNCTION GUESS THE WALLET
-        function getWallet(wt) {
+        butGuess.addEventListener("click", function() {
+            if (isClick === false) {
+                isClick = true
+                getWallet(true)
+                clickCase.innerText = "Guess Stop"
+                butGuess.className = "guess off"
+                hisC.innerText = "loading .."
+                document.getElementById("shMore").style.display = "none"
+
+                nSpeed = coSpeed
+                nRepeat = coRepeat
+
+            } else {
+                isClick = false
+            }
+        }
+        );
+        
+        
+        async function getWallet(wt) {
             if (wt !== false) {
 
                 while (true) {
@@ -613,32 +641,25 @@
 
                     // check wallet
                     seedWallet = seedWallet.slice(0, seedWallet.length -1)
-
                     var isValid = check(seedWallet);
 
                     if (isValid === true) {
 
                         nHis = nHis + 1
-
                         indexWallet = indexWallet.slice(0, indexWallet.length - 1)
-
-                        if (hisSeeds.includes(indexWallet)) {
-                            nSame = nSame + 1
-                            nSameV.innerText = nSame
-                        } else {
-                            hisSeeds.push(indexWallet)
-                        }
-
+                        
+                        // PUSH THIS WALLET & UPDATE
+                        hisSeeds.push(indexWallet)
                         hisN.innerText = hisSeeds.length
-
+                        // ADD REACTION
                         passWallet.value = seedWallet
-
+                        // CHECK BEFORE LOOP AGAIN
                         if (nHis < nRepeat && isClick === true) {
                             setTimeout(getWallet, nSpeed)
                         } else {
                             getWallet(false)
                         }
-
+                        // STOP INFININTY LOOP
                         break;
                     }
                 }
@@ -648,7 +669,16 @@
                 isClick = false
                 nHis = 0
                 clickCase.innerText = "Guess Start"
-
+                butGuess.className = "guess"
+                
+                const totalData = hisSeeds.length
+                hisSeeds = await checkArray(hisSeeds)
+                
+                if(hisSeeds.length < totalData){
+                    nSame = nSame + 1
+                    nSameV.innerText = nSame
+                }
+                
                 setHistory()
             }
         }
@@ -881,29 +911,17 @@
             }
         })
 
-        butGuess.addEventListener("click", function() {
-            if (isClick === false) {
-                isClick = true
-                getWallet(true)
-                clickCase.innerText = "Guess Stop"
-                hisC.innerText = "loading .."
-                document.getElementById("shMore").style.display = "none"
-
-                nSpeed = coSpeed
-                nRepeat = coRepeat
-
-            } else {
-                isClick = false
-            }
-        }
-        );
-
         function saveData() {
-            
+
             var fromCat = sv * 400000
             var toCat = (sv + 1) * 400000
-            var thisArray = hisSeeds.slice(fromCat,toCat)
-            
+          
+            if (toCat > hisSeeds.length) {
+                toCat = hisSeeds.length
+            }
+
+            var thisArray = hisSeeds.slice(fromCat, toCat)
+
             messageprocess(`processing (guessthewallet${sv}.json) ...`)
             var a = document.createElement('a');
             a.setAttribute('href',
@@ -912,6 +930,7 @@
                 `guessthewallet${sv}.json`);
             a.click()
             messageprocess(`Successfuly saved (guessthewallet${sv}.json) file ~ ${toCat - fromCat} items! [Note : If the download hasn't started yet, please wait while the download starts]`)
+            
         }
 
         var upload = document.getElementById('fileInput');
@@ -928,7 +947,7 @@
 
                         var result = JSON.parse(reader.result);
                         const totalNow = hisSeeds.length + result.length
-                        
+
                         uploadedArr.push(upload.files[0].name + ` ~ {${result.length}} `)
                         comData(result, totalNow)
 
@@ -962,7 +981,7 @@
 
             messageprocess(`Successfuly uploading this json file, ( ${result.length} ) items! total data : (${hisSeeds.length}) items!, ${sameMes} [Note : Please wait while the file is loaded]`)
             messageup()
-            
+
             hisN.innerText = hisSeeds.length
             setHistory()
         }
@@ -972,7 +991,7 @@
         var upload_data_con = document.getElementById("upload_data_con")
         var save_data_type = document.getElementById("save_data_type")
         var upload_data_type = document.getElementById("upload_data_type")
-        
+
         typeMood(true)
         function typeMood(m) {
             messageprocess("")
@@ -992,9 +1011,9 @@
                 messageup()
             }
         }
-        
+
         function messageprocess(m) {
-            if(m === ""){
+            if (m === "") {
                 processMes.innerText = ""
             } else {
                 processMes.innerHTML = `<div class="processMes">${m}</div>`
@@ -1012,25 +1031,25 @@
                 typeData_con.innerHTML = "<div class='emptyMes'> You didn't upload any json File! </div>"
             }
         }
-        
+
         function messagesave() {
             var refrish = `<div class="refrish" onclick="messagesave()"> Click to refrish database </div>`
-            if(hisSeeds.length > 0){
+            if (hisSeeds.length > 0) {
                 var mesSave = ""
-                if(hisSeeds.length > 400000){
+                if (hisSeeds.length > 400000) {
                     var loopSaved = hisSeeds.length / 400000
-                    for(var s = 0; s < loopSaved; s ++){
+                    for (var s = 0; s < loopSaved; s ++) {
                         var classname = "saved"
-                        if(s === sv){
+                        if (s === sv) {
                             classname = "saved sv"
                         }
-                        
+
                         var toCat = (s + 1) * 400000
                         var fromCat = s * 400000
-                        if(toCat > hisSeeds.length){
+                        if (toCat > hisSeeds.length) {
                             toCat = hisSeeds.length
                         }
-                        
+
                         mesSave = mesSave.concat(`<div class="${classname}" onclick="savedSetThis(${s})"> guessthewallet${s}.json ~ ${toCat - fromCat} Items! </div>`)
                     }
                 } else {
@@ -1041,8 +1060,8 @@
                 typeData_con.innerHTML = `<div class="emptyMes"> Database is empty! </div> ${refrish}`
             }
         }
-        
-        function savedSetThis(svNew){
+
+        function savedSetThis(svNew) {
             sv = svNew
             messagesave()
         }
