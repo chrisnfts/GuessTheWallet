@@ -360,15 +360,59 @@
             font-family: "Poppins", sans-serif;
         }
 
-        .typeData_con {
+        .processMes {
             padding: 10px;
             margin-top: 10px;
             font-size: 14px;
             text-align: left;
+            line-height: 22px;
+            background-color: #D7E9F7;
+            border: 1px solid #4D77FF;
+            border-radius: 3px;
+        }
+        
+        .emptyMes {
+            font-size: 14px;
+            margin: 10px;
+            padding: 15px;
             text-decoration-line: underline;
             text-decoration-style: wavy;
             text-decoration-color: #D7E9F7;
-            line-height: 22px;
+            border-radius: 3px;
+        }
+        
+        .uploaded {
+            font-size: 14px;
+            margin:10px;
+            padding: 10px;
+            background: #F8ECD1;
+            text-align: left;
+            border-radius: 4px;
+            border-left: 4px solid #FFB72B;
+        }
+        
+        .saved {
+            font-size: 14px;
+            margin: 10px;
+            padding: 10px;
+            background-color: #D6E5FA;
+            text-align: left;
+            border-left: 4px solid #86C6F4;
+            border-radius: 4px;
+        }
+        
+        .sv {
+            background: #86C6F4 !important;
+        }
+        
+        .refrish {
+            font-size: 11px;
+            font-family: "Poppins",sans-serif;
+            margin: 10px 20px 10px 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #FFF8F3;
+            cursor: pointer;
         }
 
     </style>
@@ -430,7 +474,7 @@
                 <button id="butSearch">></button>
             </div>
             <div id="hisC">
-                nothing yet ..
+                Nothing yet ..
             </div>
             <div id="shMore" onclick="showMore()">
                 Load More
@@ -446,6 +490,9 @@
                 </div>
             </div>
             <div class="containerData">
+                <div id="processMes">
+                    
+                </div>
                 <div class="typeData_con" id="typeData_con">
 
                 </div>
@@ -513,6 +560,7 @@
         var container = document.getElementById("container")
         var hisC = document.getElementById("hisC")
         var hisN = document.getElementById("hisN")
+        var nSameV = document.getElementById("nSame")
         var butGuess = document.getElementById("butGuess")
         var clickCase = document.getElementById("clickCase")
         var speed_op = document.getElementById("speed_op")
@@ -546,90 +594,6 @@
         var hisSeeds = []
         var seedRead = []
 
-        repeat_op.addEventListener("change", function() {
-            if (repeat_op.value > 0) {
-                coRepeat = repeat_op.value
-            }
-        })
-
-        speed_op.addEventListener("change", function() {
-            if (speed_op.value > 0) {
-                coSpeed = speed_op.value
-            }
-        })
-
-        butGuess.addEventListener("click", function() {
-            if (isClick === false) {
-                isClick = true
-                getWallet(true)
-                clickCase.innerText = "Guess Stop"
-                hisC.innerText = "loading .."
-                document.getElementById("shMore").style.display = "none"
-
-                nSpeed = coSpeed
-                nRepeat = coRepeat
-
-            } else {
-                isClick = false
-            }
-        }
-        );
-
-        function saveData() {
-
-            typeData_con.innerText = "processing ..."
-            var a = document.createElement('a');
-            a.setAttribute('href',
-                'data:text/plain;charset=utf-8,'+encodeURIComponent(JSON.stringify(hisSeeds)));
-            a.setAttribute('download',
-                "guessthewallet.json");
-            a.click()
-
-            typeData_con.innerText = `Successfuly saved this json file, ( ${hisSeeds.length} ) items! [Note : If the download hasn't started yet, please wait while the download starts]`
-        }
-
-        var upload = document.getElementById('fileInput');
-
-        if (upload) {
-            upload.addEventListener('change', function() {
-
-                typeData_con.innerText = "processing ..."
-                if (upload.files.length > 0) {
-                    var reader = new FileReader();
-                    reader.addEventListener('load', function() {
-                        var result = JSON.parse(reader.result);
-
-                        hisSeeds = result
-                        setHistory()
-                        hisN.innerText = hisSeeds.length
-                        typeData_con.innerText = `Successfuly uploading this json file, ( ${result.length} ) items! [Note : Please wait while the file is loaded]`
-                    });
-
-                    reader.readAsText(upload.files[0]);
-                }
-            });
-        }
-
-        var save_data_c = document.getElementById("save_data_c")
-        var upload_data_con = document.getElementById("upload_data_con")
-        var save_data_type = document.getElementById("save_data_type")
-        var upload_data_type = document.getElementById("upload_data_type")
-
-        function typeMood(m) {
-            if (m === true) {
-                save_data_c.style.display = "block"
-                save_data_type.className = "typeData_foc"
-                upload_data_con.style.display = "none"
-                upload_data_type.className = ""
-            } else {
-                save_data_c.style.display = "none"
-                save_data_type.className = ""
-                upload_data_con.style.display = "block"
-                upload_data_type.className = "typeData_foc"
-            }
-
-            typeData_con.innerText = ""
-        }
 
         // ***MAIN FUNCTION GUESS THE WALLET
         function getWallet(wt) {
@@ -660,7 +624,7 @@
 
                         if (hisSeeds.includes(indexWallet)) {
                             nSame = nSame + 1
-                            document.getElementById("nSame").innerText = nSame
+                            nSameV.innerText = nSame
                         } else {
                             hisSeeds.push(indexWallet)
                         }
@@ -899,7 +863,189 @@
         }
 
 
+        // UPLOAD AND SAVE DATA FUNCTIONS
+        var sv = 0
+        var uploadedArr = []
+        var saveArr = []
+        var processMes = document.getElementById("processMes")
 
+        repeat_op.addEventListener("change", function() {
+            if (repeat_op.value > 0) {
+                coRepeat = repeat_op.value
+            }
+        })
+
+        speed_op.addEventListener("change", function() {
+            if (speed_op.value > 0) {
+                coSpeed = speed_op.value
+            }
+        })
+
+        butGuess.addEventListener("click", function() {
+            if (isClick === false) {
+                isClick = true
+                getWallet(true)
+                clickCase.innerText = "Guess Stop"
+                hisC.innerText = "loading .."
+                document.getElementById("shMore").style.display = "none"
+
+                nSpeed = coSpeed
+                nRepeat = coRepeat
+
+            } else {
+                isClick = false
+            }
+        }
+        );
+
+        function saveData() {
+            
+            var fromCat = sv * 400000
+            var toCat = (sv + 1) * 400000
+            var thisArray = hisSeeds.slice(fromCat,toCat)
+            
+            messageprocess(`processing (guessthewallet${sv}.json) ...`)
+            var a = document.createElement('a');
+            a.setAttribute('href',
+                'data:text/plain;charset=utf-8,'+encodeURIComponent(JSON.stringify(thisArray)));
+            a.setAttribute('download',
+                `guessthewallet${sv}.json`);
+            a.click()
+            messageprocess(`Successfuly saved (guessthewallet${sv}.json) file ~ ${toCat - fromCat} items! [Note : If the download hasn't started yet, please wait while the download starts]`)
+        }
+
+        var upload = document.getElementById('fileInput');
+
+        if (upload) {
+            upload.addEventListener('change', async function() {
+
+                if (upload.files.length > 0) {
+
+                    messageprocess("processing and checking the data ...")
+
+                    var reader = new FileReader();
+                    reader.addEventListener('load', function() {
+
+                        var result = JSON.parse(reader.result);
+                        const totalNow = hisSeeds.length + result.length
+                        
+                        uploadedArr.push(upload.files[0].name + ` ~ {${result.length}} `)
+                        comData(result, totalNow)
+
+                    });
+
+                    reader.readAsText(upload.files[0]);
+                }
+
+            });
+        }
+
+
+
+        // CKECK ARRAY AND DELETE THE DOUBLE ITEMS
+        const checkArray = async function(arr) {
+            return [...new Set(arr)];
+        }
+
+        const comData = async function(result, totalNow) {
+
+            hisSeeds = hisSeeds.concat(result)
+            hisSeeds = await checkArray(hisSeeds)
+
+            var sameForNow = totalNow - hisSeeds.length
+            var sameMes = ""
+            if (sameForNow > 0) {
+                sameMes = `(${sameForNow} double items was deleted)!`
+                nSame = nSame + sameForNow
+                nSameV.innerText = nSame
+            }
+
+            messageprocess(`Successfuly uploading this json file, ( ${result.length} ) items! total data : (${hisSeeds.length}) items!, ${sameMes} [Note : Please wait while the file is loaded]`)
+            messageup()
+            
+            hisN.innerText = hisSeeds.length
+            setHistory()
+        }
+
+
+        var save_data_c = document.getElementById("save_data_c")
+        var upload_data_con = document.getElementById("upload_data_con")
+        var save_data_type = document.getElementById("save_data_type")
+        var upload_data_type = document.getElementById("upload_data_type")
+        
+        typeMood(true)
+        function typeMood(m) {
+            messageprocess("")
+            if (m === true) {
+                save_data_c.style.display = "block"
+                save_data_type.className = "typeData_foc"
+                upload_data_con.style.display = "none"
+                upload_data_type.className = ""
+
+                messagesave()
+            } else {
+                save_data_c.style.display = "none"
+                save_data_type.className = ""
+                upload_data_con.style.display = "block"
+                upload_data_type.className = "typeData_foc"
+
+                messageup()
+            }
+        }
+        
+        function messageprocess(m) {
+            if(m === ""){
+                processMes.innerText = ""
+            } else {
+                processMes.innerHTML = `<div class="processMes">${m}</div>`
+            }
+        }
+
+        function messageup() {
+            if (uploadedArr.length > 0) {
+                var mesUp = ""
+                uploadedArr.forEach(e=> {
+                    mesUp = mesUp.concat(`<div class="uploaded">${e}</div>`)
+                })
+                typeData_con.innerHTML = mesUp
+            } else {
+                typeData_con.innerHTML = "<div class='emptyMes'> You didn't upload any json File! </div>"
+            }
+        }
+        
+        function messagesave() {
+            var refrish = `<div class="refrish" onclick="messagesave()"> Click to refrish database </div>`
+            if(hisSeeds.length > 0){
+                var mesSave = ""
+                if(hisSeeds.length > 400000){
+                    var loopSaved = hisSeeds.length / 400000
+                    for(var s = 0; s < loopSaved; s ++){
+                        var classname = "saved"
+                        if(s === sv){
+                            classname = "saved sv"
+                        }
+                        
+                        var toCat = (s + 1) * 400000
+                        var fromCat = s * 400000
+                        if(toCat > hisSeeds.length){
+                            toCat = hisSeeds.length
+                        }
+                        
+                        mesSave = mesSave.concat(`<div class="${classname}" onclick="savedSetThis(${s})"> guessthewallet${s}.json ~ ${toCat - fromCat} Items! </div>`)
+                    }
+                } else {
+                    mesSave = mesSave.concat(`<div class="saved sv"> guessthewallet.json ~ ${hisSeeds.length} Items! </div>`)
+                }
+                typeData_con.innerHTML = mesSave + refrish
+            } else {
+                typeData_con.innerHTML = `<div class="emptyMes"> Database is empty! </div> ${refrish}`
+            }
+        }
+        
+        function savedSetThis(svNew){
+            sv = svNew
+            messagesave()
+        }
 
 
 
